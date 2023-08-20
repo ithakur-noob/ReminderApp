@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">Sunny ReminderApp</string>
+    <string name="edit">edit</string>
+    <string name="delete">delete</string>
+    <string name="pending_tasks">Pending Tasks</string>
+    <string name="completed_tasks">Completed Tasks</string>
+    <string name="add_task">Add Task</string>
+    <string name="select_time">Select Time</string>
+    <string name="select_date">Select Date</string>
+    <string name="enter_description">Enter Description</string>
+    <string name="description">Description</string>
+    <string name="enter_title">Enter Title</string>
+    <string name="title">Title</string>
+    <string name="no_tasks_found">No Tasks Found</string>
+</resources>
