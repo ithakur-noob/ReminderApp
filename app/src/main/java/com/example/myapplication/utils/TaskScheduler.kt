@@ -24,17 +24,10 @@ class TaskScheduler(private val context: Context) {
 
             val delay = timeDifference - 5 * 60 * 1000 // Schedule 5 mins before due time
             val workRequestTag = "workRequest_$taskId"
-            val constraints = Constraints.Builder()
-                .setRequiredNetworkType(NetworkType.CONNECTED) // Any network type
-                .setRequiresCharging(false) // Doesn't require charging
-                .setRequiresBatteryNotLow(false) // Battery level can be low
-                .setRequiresStorageNotLow(false) // Storage can be low
-                .setRequiresDeviceIdle(false) // Device doesn't need to be idle
-                .build()
+
             val workRequest = OneTimeWorkRequest.Builder(ReminderWorker::class.java)
                 .setInitialDelay(delay, TimeUnit.MILLISECONDS)
                 .setInputData(inputData)
-                .setConstraints(constraints)
                 .addTag(workRequestTag)
                 .build()
 
