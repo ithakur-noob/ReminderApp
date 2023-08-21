@@ -20,7 +20,9 @@ import com.example.myapplication.utils.SharedPreferencesManager
 import com.example.myapplication.utils.TaskScheduler
 import com.example.myapplication.utils.TimePickerFragment
 import com.google.android.material.snackbar.Snackbar
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Locale
 
 /*This activity is used to add, edit and set task in work manager*/
 class AddTaskActivity : AppCompatActivity(), TimePickerFragment.OnTimeSetListener,
@@ -114,26 +116,36 @@ class AddTaskActivity : AppCompatActivity(), TimePickerFragment.OnTimeSetListene
                 ),
                 false
             )
-            taskScheduler.scheduleTaskReminder(task.id, task.dueDate)
+
             if (isEdit) {
-                if (isDateToday(datestamp)) {
-                    if (isTimeAheadBy6Minutes(timestamp)) {
+                if (isDateNotLessThanCurrent(datestamp)) {
+                    if (isDateToday(datestamp)) {
+                        if (isTimeAheadBy6Minutes(timestamp)) {
+                            taskScheduler.scheduleTaskReminder(task.id, task.dueDate)
+                            taskViewModel.updateTask(task)
+                            Toast.makeText(this, "Reminder edited", Toast.LENGTH_LONG).show()
+                            finish()
+                        } else {
+                            Toast.makeText(
+                                this,
+                                "Selected time should be 6 min ahead of current time make sure am/pm is selected right",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    } else {
+                        taskScheduler.scheduleTaskReminder(task.id, task.dueDate)
                         taskViewModel.updateTask(task)
                         Toast.makeText(this, "Reminder edited", Toast.LENGTH_LONG).show()
                         finish()
-                    } else {
-                        Toast.makeText(
-                            this,
-                            "Selected time should be 6 min ahead of current time make sure am/pm is selected right",
-                            Toast.LENGTH_LONG
-                        ).show()
                     }
-                } else {
-                    taskViewModel.updateTask(task)
-                    Toast.makeText(this, "Reminder edited", Toast.LENGTH_LONG).show()
-                    finish()
-                }
+                } else
+                    Toast.makeText(
+                        this,
+                        "Selected date should not be less then current date",
+                        Toast.LENGTH_LONG
+                    ).show()
             } else {
+                taskScheduler.scheduleTaskReminder(task.id, task.dueDate)
                 taskViewModel.insertTask(task)
                 Toast.makeText(this, "Reminder added", Toast.LENGTH_LONG).show()
                 finish()
@@ -141,6 +153,25 @@ class AddTaskActivity : AppCompatActivity(), TimePickerFragment.OnTimeSetListene
 
         }
     }
+
+
+   private fun isDateNotLessThanCurrent(dateInMillis: Long): Boolean {
+        val currentCalendar = Calendar.getInstance()
+        val selectedCalendar = Calendar.getInstance().apply {
+            timeInMillis = dateInMillis
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+
+        // Compare only the year, month, and day
+        return selectedCalendar.get(Calendar.YEAR) >= currentCalendar.get(Calendar.YEAR) &&
+                selectedCalendar.get(Calendar.MONTH) >= currentCalendar.get(Calendar.MONTH) &&
+                selectedCalendar.get(Calendar.DAY_OF_MONTH) >= currentCalendar.get(Calendar.DAY_OF_MONTH)
+    }
+
+
 
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) {
@@ -219,6 +250,21 @@ class AddTaskActivity : AppCompatActivity(), TimePickerFragment.OnTimeSetListene
                 && selectedCalendar.get(Calendar.MONTH) == todayCalendar.get(Calendar.MONTH)
                 && selectedCalendar.get(Calendar.DAY_OF_MONTH) == todayCalendar.get(Calendar.DAY_OF_MONTH))
     }
+
+
+    fun isDateLessThanCurrent(dateInMillis: Long): Boolean {
+        val currentCalendar = Calendar.getInstance()
+        val selectedCalendar = Calendar.getInstance().apply {
+            timeInMillis = dateInMillis
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+
+        return selectedCalendar < currentCalendar
+    }
+
 
     private fun isTimeAheadBy6Minutes(timeInMillis: Long): Boolean {
         val currentTimeMillis = System.currentTimeMillis()
